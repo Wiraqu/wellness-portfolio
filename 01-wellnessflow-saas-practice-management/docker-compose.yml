@@ -1,0 +1,57 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: wellnessflow-db
+    environment:
+      POSTGRES_USER: wellness
+      POSTGRES_PASSWORD: flow123
+      POSTGRES_DB: wellnessflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wellness -d wellnessflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: wellnessflow-redis
+    ports:
+      - "6379:6379"
+
+  api:
+    build: ./backend
+    container_name: wellnessflow-api
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://wellness:flow123@postgres:5432/wellnessflow?schema=public
+      - JWT_SECRET=dev-secret-key-change-in-production
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - FRONTEND_URL=http://localhost:3000
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  web:
+    build: ./frontend
+    container_name: wellnessflow-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:4000/api
+      - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:

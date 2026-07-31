@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  password          String
+  name              String
+  role              UserRole @default(CLIENT)
+  avatar            String?
+  emailVerified     Boolean  @default(false)
+  subscriptionTier  SubscriptionTier @default(FREE)
+  stripeCustomerId  String?
+  stripeSubscriptionId String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  practitionerProfile PractitionerProfile?
+  clients             Client[] @relation("PractitionerClients")
+  appointments        Appointment[]
+  invoices            Invoice[]
+  healthMetrics       HealthMetric[]
+
+  @@map("users")
+}
+
+model PractitionerProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialty       String?
+  bio             String?
+  phone           String?
+  timezone        String   @default("America/New_York")
+  brandingColor   String   @default("#22c55e")
+  customDomain    String?
+  emailNotifications Boolean @default(true)
+  smsNotifications   Boolean @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("practitioner_profiles")
+}
+
+model Client {
+  id              String     @id @default(uuid())
+  userId          String     @unique
+  practitionerId  String
+  practitioner    User       @relation("PractitionerClients", fields: [practitionerId], references: [id], onDelete: Cascade)
+  healthGoals     String[]
+  notes           String?
+  status          ClientStatus @default(ONBOARDING)
+  lastSessionAt   DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  appointments    Appointment[]
+  invoices        Invoice[]
+  healthMetrics   HealthMetric[]
+
+  @@map("clients")
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  practitionerId  String
+  practitioner    User              @relation(fields: [practitionerId], references: [id], onDelete: Cascade)
+  clientId        String
+  client          Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  title           String
+  date            DateTime
+  duration        Int               @default(60)
+  type            AppointmentType   @default(FOLLOWUP)
+  status          AppointmentStatus @default(SCHEDULED)
+  notes           String?
+  telehealthUrl   String?
+  reminderSent    Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("appointments")
+}
+
+model Invoice {
+  id              String        @id @default(uuid())
+  practitionerId  String
+  practitioner    User          @relation(fields: [practitionerId], references: [id], onDelete: Cascade)
+  clientId        String
+  client          Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  amount          Decimal       @db.Decimal(10, 2)
+  currency        String        @default("USD")
+  status          InvoiceStatus @default(PENDING)
+  stripePaymentIntentId String?
+  service         String
+  description     String?
+  dueDate         DateTime?
+  paidAt          DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("invoices")
+}
+
+model HealthMetric {
+  id          String   @id @default(uuid())
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        MetricType
+  value       Decimal  @db.Decimal(10, 2)
+  unit        String
+  recordedAt  DateTime @default(now())
+  notes       String?
+  source      String?  // e.g., "manual", "apple_health", "fitbit"
+  createdAt   DateTime @default(now())
+
+  @@map("health_metrics")
+}
+
+enum UserRole {
+  ADMIN
+  PRACTITIONER
+  CLIENT
+}
+
+enum SubscriptionTier {
+  FREE
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum ClientStatus {
+  ONBOARDING
+  ACTIVE
+  INACTIVE
+}
+
+enum AppointmentType {
+  INITIAL
+  FOLLOWUP
+  GROUP
+  TELEHEALTH
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  OVERDUE
+  REFUNDED
+}
+
+enum MetricType {
+  WEIGHT
+  BLOOD_PRESSURE
+  HEART_RATE
+  SLEEP
+  MOOD
+  STEPS
+  BODY_FAT
+  BLOOD_GLUCOSE
+}

@@ -1,0 +1,45 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: carepath-db
+    environment:
+      POSTGRES_USER: carepath
+      POSTGRES_PASSWORD: care123
+      POSTGRES_DB: carepath_development
+    ports:
+      - "5433:5432"
+    volumes:
+      - carepath_data:/var/lib/postgresql/data
+
+  api:
+    build: ./backend
+    container_name: carepath-api
+    ports:
+      - "3001:3001"
+    environment:
+      - RAILS_ENV=development
+      - DB_HOST=postgres
+      - DB_USER=carepath
+      - DB_PASSWORD=care123
+      - DATABASE_URL=postgresql://carepath:care123@postgres:5432/carepath_development
+      - SECRET_KEY_BASE=dev-secret-key-base-change-in-production
+      - CORS_ORIGINS=http://localhost:3000
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend:/app
+
+  web:
+    build: ./frontend
+    container_name: carepath-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3001/api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  carepath_data:
