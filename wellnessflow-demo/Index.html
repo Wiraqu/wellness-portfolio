@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WellnessFlow - Practice Management Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root { --primary: #0ea5e9; --primary-dark: #0284c7; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --dark: #0f172a; --darker: #020617; --light: #f8fafc; --gray: #64748b; --card: rgba(30,41,59,0.6); --border: rgba(148,163,184,0.1); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--darker); color: var(--light); }
+        .app { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--dark); border-right: 1px solid var(--border); padding: 1.5rem; position: fixed; height: 100vh; overflow-y: auto; }
+        .sidebar-logo { font-size: 1.4rem; font-weight: 700; color: var(--primary); margin-bottom: 2rem; display: flex; align-items: center; gap: 0.5rem; }
+        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; color: var(--gray); margin-bottom: 0.25rem; }
+        .nav-item:hover, .nav-item.active { background: rgba(14,165,233,0.1); color: var(--primary); }
+        .main { flex: 1; margin-left: 260px; padding: 2rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .header h1 { font-size: 1.8rem; }
+        .btn { padding: 0.6rem 1.2rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--light); }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+        .stat-card h3 { font-size: 2rem; font-weight: 700; color: var(--primary); }
+        .stat-card p { color: var(--gray); font-size: 0.9rem; margin-top: 0.25rem; }
+        .stat-card .change { font-size: 0.8rem; margin-top: 0.5rem; }
+        .change-up { color: var(--success); }
+        .change-down { color: var(--danger); }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .card h2 { font-size: 1.2rem; margin-bottom: 1rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--border); }
+        th { color: var(--gray); font-weight: 500; font-size: 0.85rem; }
+        .badge { padding: 0.25rem 0.6rem; border-radius: 50px; font-size: 0.75rem; font-weight: 500; }
+        .badge-success { background: rgba(16,185,129,0.15); color: var(--success); }
+        .badge-warning { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .badge-danger { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--dark); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 90%; max-width: 500px; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.4rem; color: var(--gray); font-size: 0.9rem; }
+        .form-group input, .form-group select { width: 100%; padding: 0.6rem; background: var(--darker); border: 1px solid var(--border); border-radius: 8px; color: var(--light); }
+        .close { float: right; cursor: pointer; font-size: 1.3rem; color: var(--gray); }
+        .hidden { display: none !important; }
+        .back-link { color: var(--primary); text-decoration: none; margin-bottom: 1rem; display: inline-flex; align-items: center; gap: 0.5rem; }
+        @media (max-width: 768px) { .sidebar { display: none; } .main { margin-left: 0; } }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><i class="fas fa-heart-pulse"></i> WellnessFlow</div>
+            <nav>
+                <div class="nav-item active" onclick="showView('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</div>
+                <div class="nav-item" onclick="showView('clients')"><i class="fas fa-users"></i> Clients</div>
+                <div class="nav-item" onclick="showView('appointments')"><i class="fas fa-calendar"></i> Appointments</div>
+                <div class="nav-item" onclick="showView('invoices')"><i class="fas fa-file-invoice-dollar"></i> Invoices</div>
+                <div class="nav-item" onclick="showView('analytics')"><i class="fas fa-chart-line"></i> Analytics</div>
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                    <div class="nav-item" onclick="location.href='../'"><i class="fas fa-arrow-left"></i> Back to Portfolio</div>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main">
+            <!-- Dashboard -->
+            <div id="view-dashboard">
+                <div class="header"><h1>Dashboard</h1><button class="btn btn-primary" onclick="openModal('client')"><i class="fas fa-plus"></i> New Client</button></div>
+                <div class="grid-4">
+                    <div class="stat-card"><h3 id="stat-clients">24</h3><p>Total Clients</p><div class="change change-up"><i class="fas fa-arrow-up"></i> 12% this month</div></div>
+                    <div class="stat-card"><h3 id="stat-appointments">18</h3><p>Appointments</p><div class="change change-up"><i class="fas fa-arrow-up"></i> 8% this week</div></div>
+                    <div class="stat-card"><h3 id="stat-revenue">$4,250</h3><p>Revenue</p><div class="change change-up"><i class="fas fa-arrow-up"></i> 23% this month</div></div>
+                    <div class="stat-card"><h3 id="stat-outstanding">$890</h3><p>Outstanding</p><div class="change change-down"><i class="fas fa-arrow-down"></i> 5% this week</div></div>
+                </div>
+                <div class="card"><h2>Recent Appointments</h2><table><thead><tr><th>Client</th><th>Service</th><th>Date</th><th>Status</th></tr></thead><tbody id="recent-appointments"></tbody></table></div>
+                <div class="card"><h2>Revenue Overview</h2>
+                    <div style="display: flex; align-items: flex-end; gap: 0.5rem; height: 200px; padding: 1rem 0;">
+                        <div style="flex: 1; background: var(--primary); border-radius: 4px; height: 60%; opacity: 0.8;"></div>
+                        <div style="flex: 1; background: var(--primary); border-radius: 4px; height: 75%; opacity: 0.8;"></div>
+                        <div style="flex: 1; background: var(--primary); border-radius: 4px; height: 50%; opacity: 0.8;"></div>
+                        <div style="flex: 1; background: var(--primary); border-radius: 4px; height: 85%; opacity: 0.8;"></div>
+                        <div style="flex: 1; background: var(--primary); border-radius: 4px; height: 70%; opacity: 0.8;"></div>
+                        <div style="flex: 1; background: var(--primary); border-radius: 4px; height: 90%; opacity: 0.8;"></div>
+                        <div style="flex: 1; background: var(--primary); border-radius: 4px; height: 100%; opacity: 0.8;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: var(--gray); font-size: 0.8rem; margin-top: 0.5rem;">
+                        <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clients -->
+            <div id="view-clients" class="hidden">
+                <div class="header"><h1>Clients</h1><button class="btn btn-primary" onclick="openModal('client')"><i class="fas fa-plus"></i> Add Client</button></div>
+                <div class="card"><table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead><tbody id="clients-table"></tbody></table></div>
+            </div>
+
+            <!-- Appointments -->
+            <div id="view-appointments" class="hidden">
+                <div class="header"><h1>Appointments</h1><button class="btn btn-primary" onclick="openModal('appointment')"><i class="fas fa-plus"></i> Schedule</button></div>
+                <div class="card"><table><thead><tr><th>Client</th><th>Service</th><th>Date & Time</th><th>Duration</th><th>Status</th></tr></thead><tbody id="appointments-table"></tbody></table></div>
+            </div>
+
+            <!-- Invoices -->
+            <div id="view-invoices" class="hidden">
+                <div class="header"><h1>Invoices</h1><button class="btn btn-primary" onclick="openModal('invoice')"><i class="fas fa-plus"></i> Create Invoice</button></div>
+                <div class="card"><table><thead><tr><th>Invoice #</th><th>Client</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead><tbody id="invoices-table"></tbody></table></div>
+            </div>
+
+            <!-- Analytics -->
+            <div id="view-analytics" class="hidden">
+                <div class="header"><h1>Analytics</h1></div>
+                <div class="grid-4">
+                    <div class="stat-card"><h3>87%</h3><p>Client Retention</p></div>
+                    <div class="stat-card"><h3>4.8</h3><p>Avg. Rating</p></div>
+                    <div class="stat-card"><h3>32 min</h3><p>Avg. Session</p></div>
+                    <div class="stat-card"><h3>94%</h3><p>Attendance Rate</p></div>
+                </div>
+                <div class="card"><h2>Client Growth</h2>
+                    <div style="display: flex; align-items: flex-end; gap: 0.5rem; height: 200px;">
+                        <div style="flex: 1; background: linear-gradient(to top, var(--primary), var(--primary-dark)); border-radius: 4px; height: 30%;"></div>
+                        <div style="flex: 1; background: linear-gradient(to top, var(--primary), var(--primary-dark)); border-radius: 4px; height: 45%;"></div>
+                        <div style="flex: 1; background: linear-gradient(to top, var(--primary), var(--primary-dark)); border-radius: 4px; height: 40%;"></div>
+                        <div style="flex: 1; background: linear-gradient(to top, var(--primary), var(--primary-dark)); border-radius: 4px; height: 60%;"></div>
+                        <div style="flex: 1; background: linear-gradient(to top, var(--primary), var(--primary-dark)); border-radius: 4px; height: 55%;"></div>
+                        <div style="flex: 1; background: linear-gradient(to top, var(--primary), var(--primary-dark)); border-radius: 4px; height: 75%;"></div>
+                        <div style="flex: 1; background: linear-gradient(to top, var(--primary), var(--primary-dark)); border-radius: 4px; height: 90%;"></div>
+                        <div style="flex: 1; background: linear-gradient(to top, var(--primary), var(--primary-dark)); border-radius: 4px; height: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title">Add New</h2>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data store with localStorage
+        const STORAGE_KEY = 'wellnessflow_demo_data';
+        let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+            clients: [
+                { id: 1, name: 'Sarah Johnson', email: 'sarah@email.com', phone: '(555) 123-4567', status: 'active' },
+                { id: 2, name: 'Michael Chen', email: 'michael@email.com', phone: '(555) 234-5678', status: 'active' },
+                { id: 3, name: 'Emily Davis', email: 'emily@email.com', phone: '(555) 345-6789', status: 'inactive' },
+            ],
+            appointments: [
+                { id: 1, client: 'Sarah Johnson', service: 'Nutrition Consultation', date: '2026-08-10 10:00', duration: '60 min', status: 'scheduled' },
+                { id: 2, client: 'Michael Chen', service: 'Therapy Session', date: '2026-08-10 14:00', duration: '50 min', status: 'confirmed' },
+                { id: 3, client: 'Emily Davis', service: 'Health Coaching', date: '2026-08-11 09:30', duration: '45 min', status: 'pending' },
+            ],
+            invoices: [
+                { id: 'INV-001', client: 'Sarah Johnson', amount: 150, date: '2026-08-01', status: 'paid' },
+                { id: 'INV-002', client: 'Michael Chen', amount: 200, date: '2026-08-03', status: 'pending' },
+                { id: 'INV-003', client: 'Emily Davis', amount: 120, date: '2026-08-05', status: 'overdue' },
+            ]
+        };
+
+        function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); updateStats(); renderAll(); }
+
+        function updateStats() {
+            document.getElementById('stat-clients').textContent = data.clients.length;
+            document.getElementById('stat-appointments').textContent = data.appointments.length;
+            const revenue = data.invoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.amount, 0);
+            document.getElementById('stat-revenue').textContent = '$' + revenue.toLocaleString();
+            const outstanding = data.invoices.filter(i => i.status !== 'paid').reduce((s, i) => s + i.amount, 0);
+            document.getElementById('stat-outstanding').textContent = '$' + outstanding.toLocaleString();
+        }
+
+        function renderAll() {
+            // Recent appointments
+            document.getElementById('recent-appointments').innerHTML = data.appointments.slice(0, 5).map(a => `
+                <tr><td>${a.client}</td><td>${a.service}</td><td>${a.date}</td>
+                <td><span class="badge badge-${a.status === 'confirmed' ? 'success' : a.status === 'pending' ? 'warning' : 'danger'}">${a.status}</span></td></tr>
+            `).join('');
+
+            // Clients
+            document.getElementById('clients-table').innerHTML = data.clients.map(c => `
+                <tr><td>${c.name}</td><td>${c.email}</td><td>${c.phone}</td>
+                <td><span class="badge badge-${c.status === 'active' ? 'success' : 'warning'}">${c.status}</span></td>
+                <td><button class="btn btn-outline btn-sm" onclick="deleteClient(${c.id})"><i class="fas fa-trash"></i></button></td></tr>
+            `).join('');
+
+            // Appointments
+            document.getElementById('appointments-table').innerHTML = data.appointments.map(a => `
+                <tr><td>${a.client}</td><td>${a.service}</td><td>${a.date}</td><td>${a.duration}</td>
+                <td><span class="badge badge-${a.status === 'confirmed' ? 'success' : a.status === 'pending' ? 'warning' : 'danger'}">${a.status}</span></td></tr>
+            `).join('');
+
+            // Invoices
+            document.getElementById('invoices-table').innerHTML = data.invoices.map(i => `
+                <tr><td>${i.id}</td><td>${i.client}</td><td>$${i.amount}</td><td>${i.date}</td>
+                <td><span class="badge badge-${i.status === 'paid' ? 'success' : i.status === 'pending' ? 'warning' : 'danger'}">${i.status}</span></td></tr>
+            `).join('');
+        }
+
+        function showView(view) {
+            document.querySelectorAll('[id^=\"view-\"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-' + view).classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function openModal(type) {
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modal-title');
+            const body = document.getElementById('modal-body');
+            modal.classList.add('active');
+
+            if (type === 'client') {
+                title.textContent = 'Add New Client';
+                body.innerHTML = `
+                    <div class="form-group"><label>Name</label><input type="text" id="new-client-name" placeholder="Full name"></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="new-client-email" placeholder="email@example.com"></div>
+                    <div class="form-group"><label>Phone</label><input type="tel" id="new-client-phone" placeholder="(555) 000-0000"></div>
+                    <button class="btn btn-primary" onclick="addClient()">Save Client</button>
+                `;
+            } else if (type === 'appointment') {
+                title.textContent = 'Schedule Appointment';
+                const clients = data.clients.map(c => `<option>${c.name}</option>`).join('');
+                body.innerHTML = `
+                    <div class="form-group"><label>Client</label><select id="new-appt-client">${clients}</select></div>
+                    <div class="form-group"><label>Service</label><input type="text" id="new-appt-service" value="Consultation"></div>
+                    <div class="form-group"><label>Date & Time</label><input type="datetime-local" id="new-appt-date"></div>
+                    <div class="form-group"><label>Duration</label><select id="new-appt-duration"><option>30 min</option><option>45 min</option><option>60 min</option></select></div>
+                    <button class="btn btn-primary" onclick="addAppointment()">Schedule</button>
+                `;
+            } else if (type === 'invoice') {
+                title.textContent = 'Create Invoice';
+                const clients = data.clients.map(c => `<option>${c.name}</option>`).join('');
+                body.innerHTML = `
+                    <div class="form-group"><label>Client</label><select id="new-inv-client">${clients}</select></div>
+                    <div class="form-group"><label>Amount ($)</label><input type="number" id="new-inv-amount" placeholder="0.00"></div>
+                    <button class="btn btn-primary" onclick="addInvoice()">Create Invoice</button>
+                `;
+            }
+        }
+
+        function closeModal() { document.getElementById('modal').classList.remove('active'); }
+
+        function addClient() {
+            const name = document.getElementById('new-client-name').value;
+            const email = document.getElementById('new-client-email').value;
+            const phone = document.getElementById('new-client-phone').value;
+            if (!name) return alert('Name is required');
+            data.clients.push({ id: Date.now(), name, email, phone, status: 'active' });
+            saveData(); closeModal();
+        }
+
+        function deleteClient(id) {
+            if (confirm('Delete this client?')) {
+                data.clients = data.clients.filter(c => c.id !== id);
+                saveData();
+            }
+        }
+
+        function addAppointment() {
+            const client = document.getElementById('new-appt-client').value;
+            const service = document.getElementById('new-appt-service').value;
+            const date = document.getElementById('new-appt-date').value;
+            const duration = document.getElementById('new-appt-duration').value;
+            if (!date) return alert('Date is required');
+            data.appointments.push({ id: Date.now(), client, service, date: date.replace('T', ' '), duration, status: 'scheduled' });
+            saveData(); closeModal();
+        }
+
+        function addInvoice() {
+            const client = document.getElementById('new-inv-client').value;
+            const amount = parseFloat(document.getElementById('new-inv-amount').value);
+            if (!amount) return alert('Amount is required');
+            data.invoices.push({ id: 'INV-' + String(data.invoices.length + 1).padStart(3, '0'), client, amount, date: new Date().toISOString().split('T')[0], status: 'pending' });
+            saveData(); closeModal();
+        }
+
+        // Close modal on outside click
+        document.getElementById('modal').addEventListener('click', e => { if (e.target === document.getElementById('modal')) closeModal(); });
+
+        // Init
+        updateStats(); renderAll();
+    </script>
+</body>
+</html>
