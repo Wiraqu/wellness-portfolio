@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VitalSync - AI Health Risk Prediction Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root { --primary: #10b981; --primary-dark: #059669; --danger: #ef4444; --warning: #f59e0b; --info: #0ea5e9; --dark: #0f172a; --darker: #020617; --light: #f8fafc; --gray: #64748b; --card: rgba(30,41,59,0.6); --border: rgba(148,163,184,0.1); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--darker); color: var(--light); }
+        .app { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--dark); border-right: 1px solid var(--border); padding: 1.5rem; position: fixed; height: 100vh; z-index: 100; }
+        .sidebar-logo { font-size: 1.4rem; font-weight: 700; color: var(--primary); margin-bottom: 2rem; display: flex; align-items: center; gap: 0.5rem; }
+        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; color: var(--gray); margin-bottom: 0.25rem; font-size: 0.9rem; }
+        .nav-item:hover, .nav-item.active { background: rgba(16,185,129,0.1); color: var(--primary); }
+        .main { flex: 1; margin-left: 260px; padding: 2rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .header h1 { font-size: 1.8rem; }
+        .btn { padding: 0.6rem 1.2rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s; font-size: 0.9rem; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--light); }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; text-align: center; }
+        .stat-card h3 { font-size: 2rem; font-weight: 700; }
+        .stat-card p { color: var(--gray); font-size: 0.9rem; margin-top: 0.25rem; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .card h2 { font-size: 1.2rem; margin-bottom: 1rem; }
+        .risk-low { color: var(--primary); }
+        .risk-medium { color: var(--warning); }
+        .risk-high { color: #f97316; }
+        .risk-critical { color: var(--danger); }
+        .badge { padding: 0.25rem 0.6rem; border-radius: 50px; font-size: 0.75rem; font-weight: 500; }
+        .badge-low { background: rgba(16,185,129,0.15); color: var(--primary); }
+        .badge-medium { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .badge-high { background: rgba(249,115,22,0.15); color: #f97316; }
+        .badge-critical { background: rgba(239,68,68,0.15); color: var(--danger); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        th { color: var(--gray); font-weight: 500; font-size: 0.85rem; }
+        .alert-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.1); border-radius: 8px; margin-bottom: 0.5rem; }
+        .alert-icon { width: 40px; height: 40px; border-radius: 50%; background: rgba(239,68,68,0.1); display: flex; align-items: center; justify-content: center; color: var(--danger); flex-shrink: 0; }
+        .hidden { display: none !important; }
+        .progress-bar { height: 8px; background: var(--dark); border-radius: 4px; overflow: hidden; margin-top: 0.5rem; }
+        .progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+        .intervention-btn { padding: 0.4rem 0.8rem; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
+        .intervention-btn:hover { background: var(--primary-dark); }
+        .intervention-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        @media (max-width: 768px) { .sidebar { display: none; } .main { margin-left: 0; padding: 1rem; } .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><i class="fas fa-brain"></i> VitalSync</div>
+            <nav>
+                <div class="nav-item active" onclick="showView('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</div>
+                <div class="nav-item" onclick="showView('workforce')"><i class="fas fa-users"></i> Workforce</div>
+                <div class="nav-item" onclick="showView('predictions')"><i class="fas fa-robot"></i> AI Predictions</div>
+                <div class="nav-item" onclick="showView('alerts')"><i class="fas fa-bell"></i> Alerts</div>
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                    <div class="nav-item" onclick="location.href='../'"><i class="fas fa-arrow-left"></i> Back to Portfolio</div>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main">
+            <div id="view-dashboard">
+                <div class="header"><h1>Health Risk Dashboard</h1><button class="btn btn-primary" onclick="runPrediction()"><i class="fas fa-sync"></i> Run AI Scan</button></div>
+                <div class="grid-4">
+                    <div class="stat-card"><h3 class="risk-low">142</h3><p>Total Employees</p></div>
+                    <div class="stat-card"><h3 class="risk-low">98</h3><p>Low Risk</p></div>
+                    <div class="stat-card"><h3 class="risk-medium">32</h3><p>Medium Risk</p></div>
+                    <div class="stat-card"><h3 class="risk-high">12</h3><p>High Risk</p></div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="card">
+                        <h2>Risk Distribution</h2>
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-top: 1rem;">
+                            <div style="position: relative; width: 150px; height: 150px;">
+                                <svg viewBox="0 0 36 36" style="width: 100%; transform: rotate(-90deg);">
+                                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(16,185,129,0.2)" stroke-width="3"/>
+                                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--primary)" stroke-width="3" stroke-dasharray="69, 100"/>
+                                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--warning)" stroke-width="3" stroke-dasharray="23, 100" stroke-dashoffset="-69"/>
+                                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--danger)" stroke-width="3" stroke-dasharray="8, 100" stroke-dashoffset="-92"/>
+                                </svg>
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                                    <div style="font-size: 1.5rem; font-weight: 700;">142</div>
+                                    <div style="font-size: 0.7rem; color: var(--gray);">Total</div>
+                                </div>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"><span style="color: var(--primary);">&#9679; Low Risk</span><span>98 (69%)</span></div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;"><span style="color: var(--warning);">&#9679; Medium</span><span>32 (23%)</span></div>
+                                <div style="display: flex; justify-content: space-between;"><span style="color: var(--danger);">&#9679; High Risk</span><span>12 (8%)</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2>Wellness Dimensions</h2>
+                        <div style="margin-top: 1rem;">
+                            <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between;"><span>Sleep Quality</span><span class="risk-medium">6.2/10</span></div><div class="progress-bar"><div class="progress-fill" style="width: 62%; background: var(--warning);"></div></div></div>
+                            <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between;"><span>Stress Level</span><span class="risk-high">7.8/10</span></div><div class="progress-bar"><div class="progress-fill" style="width: 78%; background: var(--danger);"></div></div></div>
+                            <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between;"><span>Physical Activity</span><span class="risk-low">8.1/10</span></div><div class="progress-bar"><div class="progress-fill" style="width: 81%; background: var(--primary);"></div></div></div>
+                            <div style="margin-bottom: 1rem;"><div style="display: flex; justify-content: space-between;"><span>Nutrition</span><span class="risk-medium">6.8/10</span></div><div class="progress-bar"><div class="progress-fill" style="width: 68%; background: var(--warning);"></div></div></div>
+                            <div><div style="display: flex; justify-content: space-between;"><span>Mental Health</span><span class="risk-medium">7.2/10</span></div><div class="progress-bar"><div class="progress-fill" style="width: 72%; background: var(--warning);"></div></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Recent Alerts</h2>
+                    <div id="alerts-list">
+                        <div class="alert-item"><div class="alert-icon"><i class="fas fa-exclamation"></i></div><div><div style="font-weight: 600;">High Stress Detected</div><div style="font-size: 0.85rem; color: var(--gray);">John Smith - Stress level: 9.2/10 - 2 hours ago</div></div></div>
+                        <div class="alert-item"><div class="alert-icon"><i class="fas fa-moon"></i></div><div><div style="font-weight: 600;">Sleep Deprivation</div><div style="font-size: 0.85rem; color: var(--gray);">Maria Garcia - Sleep: 4.5h - 5 hours ago</div></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-workforce" class="hidden">
+                <div class="header"><h1>Workforce Health</h1></div>
+                <div class="card"><table><thead><tr><th>Employee</th><th>Department</th><th>Sleep</th><th>Stress</th><th>Heart Rate</th><th>Steps</th><th>Risk Score</th><th>Status</th></tr></thead><tbody id="workforce-table"></tbody></table></div>
+            </div>
+
+            <div id="view-predictions" class="hidden">
+                <div class="header"><h1>AI Risk Predictions</h1><button class="btn btn-primary" onclick="runPrediction()"><i class="fas fa-robot"></i> Run New Prediction</button></div>
+                <div class="card"><h2>Prediction Model Results</h2><div id="prediction-results" style="margin-top: 1rem;"><p style="color: var(--gray);">Click "Run New Prediction" to simulate AI analysis of workforce health data.</p></div></div>
+            </div>
+
+            <div id="view-alerts" class="hidden">
+                <div class="header"><h1>Health Alerts</h1></div>
+                <div id="all-alerts"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const employees = [
+            { name: 'John Smith', dept: 'Engineering', sleep: 5.2, stress: 9.2, hr: 105, steps: 2100, risk: 85, intervened: false },
+            { name: 'Maria Garcia', dept: 'Marketing', sleep: 4.5, stress: 8.5, hr: 98, steps: 1800, risk: 78, intervened: false },
+            { name: 'David Lee', dept: 'Sales', sleep: 7.5, stress: 5.2, hr: 72, steps: 8500, risk: 32, intervened: false },
+            { name: 'Sarah Johnson', dept: 'HR', sleep: 6.8, stress: 6.5, hr: 78, steps: 5200, risk: 48, intervened: false },
+            { name: 'Michael Brown', dept: 'Engineering', sleep: 5.8, stress: 7.8, hr: 92, steps: 3200, risk: 65, intervened: false },
+            { name: 'Emily Davis', dept: 'Design', sleep: 8.2, stress: 3.5, hr: 68, steps: 9200, risk: 18, intervened: false },
+            { name: 'Robert Wilson', dept: 'Finance', sleep: 6.2, stress: 7.2, hr: 85, steps: 4100, risk: 55, intervened: false },
+            { name: 'Lisa Anderson', dept: 'Marketing', sleep: 7.0, stress: 5.8, hr: 75, steps: 6800, risk: 38, intervened: false },
+        ];
+
+        const alerts = [
+            { icon: 'fa-exclamation', title: 'High Stress Detected', desc: 'John Smith - Stress level: 9.2/10', time: '2 hours ago', type: 'critical' },
+            { icon: 'fa-moon', title: 'Sleep Deprivation', desc: 'Maria Garcia - Sleep: 4.5h', time: '5 hours ago', type: 'warning' },
+            { icon: 'fa-heart-pulse', title: 'Elevated Heart Rate', desc: 'Michael Brown - HR: 92 bpm at rest', time: '8 hours ago', type: 'warning' },
+            { icon: 'fa-person-walking', title: 'Low Activity', desc: 'John Smith - Steps: 2,100', time: '1 day ago', type: 'info' },
+        ];
+
+        function getRiskClass(score) { if (score < 40) return 'risk-low'; if (score < 60) return 'risk-medium'; if (score < 80) return 'risk-high'; return 'risk-critical'; }
+        function getBadgeClass(score) { if (score < 40) return 'badge-low'; if (score < 60) return 'badge-medium'; if (score < 80) return 'badge-high'; return 'badge-critical'; }
+        function getRiskLabel(score) { if (score < 40) return 'Low'; if (score < 60) return 'Medium'; if (score < 80) return 'High'; return 'Critical'; }
+
+        function renderWorkforce() {
+            document.getElementById('workforce-table').innerHTML = employees.map((e, i) => `
+                <tr>
+                    <td><strong>${e.name}</strong></td><td>${e.dept}</td><td>${e.sleep}h</td><td>${e.stress}/10</td>
+                    <td>${e.hr} bpm</td><td>${e.steps.toLocaleString()}</td>
+                    <td class="${getRiskClass(e.risk)}"><strong>${e.risk}</strong></td>
+                    <td><span class="badge ${getBadgeClass(e.risk)}">${getRiskLabel(e.risk)}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderAlerts() {
+            const html = alerts.map(a => `
+                <div class="alert-item">
+                    <div class="alert-icon"><i class="fas ${a.icon}"></i></div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600;">${a.title}</div>
+                        <div style="font-size: 0.85rem; color: var(--gray);">${a.desc} - ${a.time}</div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('all-alerts').innerHTML = `<div class="card">${html}</div>`;
+        }
+
+        function runPrediction() {
+            const results = document.getElementById('prediction-results');
+            const highRisk = employees.filter(e => e.risk >= 60);
+            results.innerHTML = `
+                <div style="background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <i class="fas fa-check-circle" style="color: var(--primary);"></i><strong>AI Model Analysis Complete</strong>
+                    </div>
+                    <p style="color: var(--gray); font-size: 0.9rem;">Analyzed 142 employee health records using simulated ML risk scoring.</p>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <div class="stat-card"><h3 class="risk-low">98</h3><p>Low Risk (&lt;40)</p></div>
+                    <div class="stat-card"><h3 class="risk-medium">32</h3><p>Medium Risk (40-59)</p></div>
+                    <div class="stat-card"><h3 class="risk-high">8</h3><p>High Risk (60-79)</p></div>
+                    <div class="stat-card"><h3 class="risk-critical">4</h3><p>Critical (80+)</p></div>
+                </div>
+                <h3 style="margin-bottom: 0.75rem;">High Risk Employees Requiring Intervention</h3>
+                ${highRisk.map((e, i) => `
+                    <div class="alert-item">
+                        <div class="alert-icon"><i class="fas fa-user-exclamation"></i></div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600;">${e.name} <span style="color: var(--gray); font-weight: 400;">- ${e.dept}</span></div>
+                            <div style="font-size: 0.85rem; color: var(--gray);">Risk Score: <span class="${getRiskClass(e.risk)}"><strong>${e.risk}</strong></span> | Sleep: ${e.sleep}h | Stress: ${e.stress}/10</div>
+                        </div>
+                        <button class="intervention-btn" id="btn-${i}" onclick="intervene(${i})">${e.intervened ? 'Resolved' : 'Intervene'}</button>
+                    </div>
+                `).join('')}
+            `;
+            showView('predictions');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item')[2].classList.add('active');
+        }
+
+        function intervene(idx) {
+            employees[idx].intervened = true;
+            document.getElementById('btn-' + idx).textContent = 'Resolved';
+            document.getElementById('btn-' + idx).disabled = true;
+        }
+
+        function showView(view) {
+            document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-' + view).classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        renderWorkforce(); renderAlerts();
+    </script>
+</body>
+</html>
