@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarePath - Hospital Patient Portal Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root { --primary: #8b5cf6; --primary-dark: #7c3aed; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --info: #0ea5e9; --dark: #0f172a; --darker: #020617; --light: #f8fafc; --gray: #64748b; --card: rgba(30,41,59,0.6); --border: rgba(148,163,184,0.1); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--darker); color: var(--light); }
+        .app { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--dark); border-right: 1px solid var(--border); padding: 1.5rem; position: fixed; height: 100vh; z-index: 100; }
+        .sidebar-logo { font-size: 1.4rem; font-weight: 700; color: var(--primary); margin-bottom: 2rem; display: flex; align-items: center; gap: 0.5rem; }
+        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; color: var(--gray); margin-bottom: 0.25rem; font-size: 0.9rem; }
+        .nav-item:hover, .nav-item.active { background: rgba(139,92,246,0.1); color: var(--primary); }
+        .main { flex: 1; margin-left: 260px; padding: 2rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .header h1 { font-size: 1.8rem; }
+        .btn { padding: 0.6rem 1.2rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s; font-size: 0.9rem; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--light); }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+        .stat-card h3 { font-size: 2rem; font-weight: 700; color: var(--primary); }
+        .stat-card p { color: var(--gray); font-size: 0.9rem; margin-top: 0.25rem; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .card h2 { font-size: 1.2rem; margin-bottom: 1rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        th { color: var(--gray); font-weight: 500; font-size: 0.85rem; }
+        .badge { padding: 0.25rem 0.6rem; border-radius: 50px; font-size: 0.75rem; font-weight: 500; }
+        .badge-success { background: rgba(16,185,129,0.15); color: var(--success); }
+        .badge-warning { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .badge-danger { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .badge-info { background: rgba(14,165,233,0.15); color: var(--info); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--dark); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.4rem; color: var(--gray); font-size: 0.9rem; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.6rem; background: var(--darker); border: 1px solid var(--border); border-radius: 8px; color: var(--light); font-size: 0.9rem; }
+        .close { float: right; cursor: pointer; font-size: 1.3rem; color: var(--gray); }
+        .hidden { display: none !important; }
+        .timeline { position: relative; padding-left: 2rem; }
+        .timeline::before { content: ''; position: absolute; left: 0.5rem; top: 0; bottom: 0; width: 2px; background: var(--border); }
+        .timeline-item { position: relative; margin-bottom: 1.5rem; }
+        .timeline-item::before { content: ''; position: absolute; left: -1.65rem; top: 0.3rem; width: 10px; height: 10px; border-radius: 50%; background: var(--primary); }
+        .timeline-date { font-size: 0.8rem; color: var(--gray); margin-bottom: 0.25rem; }
+        .timeline-title { font-weight: 600; margin-bottom: 0.25rem; }
+        .timeline-desc { font-size: 0.9rem; color: var(--gray); }
+        .message-item { display: flex; gap: 1rem; padding: 1rem; background: var(--card); border-radius: 12px; margin-bottom: 0.75rem; }
+        .message-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.9rem; flex-shrink: 0; }
+        .message-content { flex: 1; }
+        .message-header { display: flex; justify-content: space-between; margin-bottom: 0.25rem; }
+        .message-name { font-weight: 600; }
+        .message-time { font-size: 0.8rem; color: var(--gray); }
+        .message-text { color: var(--gray); font-size: 0.9rem; }
+        @media (max-width: 768px) { .sidebar { display: none; } .main { margin-left: 0; padding: 1rem; } .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="sidebar-logo"><i class="fas fa-hospital"></i> CarePath</div>
+            <nav>
+                <div class="nav-item active" onclick="showView('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</div>
+                <div class="nav-item" onclick="showView('patients')"><i class="fas fa-users"></i> Patients</div>
+                <div class="nav-item" onclick="showView('appointments')"><i class="fas fa-calendar"></i> Appointments</div>
+                <div class="nav-item" onclick="showView('records')"><i class="fas fa-file-medical"></i> Medical Records</div>
+                <div class="nav-item" onclick="showView('messages')"><i class="fas fa-comments"></i> Messages</div>
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                    <div class="nav-item" onclick="location.href='../'"><i class="fas fa-arrow-left"></i> Back to Portfolio</div>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main">
+            <div id="view-dashboard">
+                <div class="header"><h1>Hospital Dashboard</h1><button class="btn btn-primary" onclick="openModal('patient')"><i class="fas fa-plus"></i> New Patient</button></div>
+                <div class="grid-4">
+                    <div class="stat-card"><h3>1,247</h3><p>Total Patients</p></div>
+                    <div class="stat-card"><h3>42</h3><p>Today's Appointments</p></div>
+                    <div class="stat-card"><h3>18</h3><p>Admitted</p></div>
+                    <div class="stat-card"><h3>3</h3><p>Critical</p></div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="card">
+                        <h2>Today's Schedule</h2>
+                        <table><thead><tr><th>Time</th><th>Patient</th><th>Doctor</th><th>Type</th></tr></thead>
+                        <tbody>
+                            <tr><td>09:00</td><td>Robert Chen</td><td>Dr. Sarah Miller</td><td><span class="badge badge-info">Check-up</span></td></tr>
+                            <tr><td>10:30</td><td>Linda Park</td><td>Dr. James Wilson</td><td><span class="badge badge-warning">Follow-up</span></td></tr>
+                            <tr><td>11:45</td><td>Michael Torres</td><td>Dr. Sarah Miller</td><td><span class="badge badge-danger">Urgent</span></td></tr>
+                            <tr><td>14:00</td><td>Emma Davis</td><td>Dr. James Wilson</td><td><span class="badge badge-success">Routine</span></td></tr>
+                        </tbody></table>
+                    </div>
+                    <div class="card">
+                        <h2>Recent Activity</h2>
+                        <div class="timeline">
+                            <div class="timeline-item"><div class="timeline-date">10:30 AM</div><div class="timeline-title">Lab Results Uploaded</div><div class="timeline-desc">Blood work for Patient #1042 completed</div></div>
+                            <div class="timeline-item"><div class="timeline-date">09:15 AM</div><div class="timeline-title">New Admission</div><div class="timeline-desc">Patient Robert Chen admitted to Room 302</div></div>
+                            <div class="timeline-item"><div class="timeline-date">08:45 AM</div><div class="timeline-title">Prescription Updated</div><div class="timeline-desc">Dr. Miller updated medication for Linda Park</div></div>
+                            <div class="timeline-item"><div class="timeline-date">Yesterday</div><div class="timeline-title">Discharge</div><div class="timeline-desc">Patient Emma Davis discharged after recovery</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-patients" class="hidden">
+                <div class="header"><h1>Patients</h1><button class="btn btn-primary" onclick="openModal('patient')"><i class="fas fa-plus"></i> Add Patient</button></div>
+                <div class="card"><table><thead><tr><th>ID</th><th>Name</th><th>Age</th><th>Condition</th><th>Status</th><th>Room</th></tr></thead><tbody id="patients-table"></tbody></table></div>
+            </div>
+
+            <div id="view-appointments" class="hidden">
+                <div class="header"><h1>Appointments</h1><button class="btn btn-primary" onclick="openModal('appointment')"><i class="fas fa-plus"></i> Schedule</button></div>
+                <div class="card"><table><thead><tr><th>Patient</th><th>Doctor</th><th>Date</th><th>Time</th><th>Type</th><th>Status</th></tr></thead><tbody id="appointments-table"></tbody></table></div>
+            </div>
+
+            <div id="view-records" class="hidden">
+                <div class="header"><h1>Medical Records</h1></div>
+                <div id="records-list"></div>
+            </div>
+
+            <div id="view-messages" class="hidden">
+                <div class="header"><h1>Secure Messages</h1><button class="btn btn-primary" onclick="openModal('message')"><i class="fas fa-plus"></i> New Message</button></div>
+                <div id="messages-list"></div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title">Add New</h2>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'carepath_demo_data';
+        let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+            patients: [
+                { id: 'P-1001', name: 'Robert Chen', age: 45, condition: 'Hypertension', status: 'admitted', room: '302' },
+                { id: 'P-1002', name: 'Linda Park', age: 62, condition: 'Diabetes Type 2', status: 'outpatient', room: '-' },
+                { id: 'P-1003', name: 'Michael Torres', age: 34, condition: 'Appendicitis', status: 'critical', room: 'ICU-5' },
+                { id: 'P-1004', name: 'Emma Davis', age: 28, condition: 'Pregnancy', status: 'outpatient', room: '-' },
+                { id: 'P-1005', name: 'James Wilson', age: 55, condition: 'Heart Disease', status: 'admitted', room: '205' },
+            ],
+            appointments: [
+                { patient: 'Robert Chen', doctor: 'Dr. Sarah Miller', date: '2026-08-07', time: '09:00', type: 'Check-up', status: 'completed' },
+                { patient: 'Linda Park', doctor: 'Dr. James Wilson', date: '2026-08-07', time: '10:30', type: 'Follow-up', status: 'in-progress' },
+                { patient: 'Michael Torres', doctor: 'Dr. Sarah Miller', date: '2026-08-07', time: '11:45', type: 'Urgent', status: 'scheduled' },
+                { patient: 'Emma Davis', doctor: 'Dr. James Wilson', date: '2026-08-08', time: '14:00', type: 'Routine', status: 'scheduled' },
+            ],
+            records: [
+                { patient: 'Robert Chen', date: '2026-08-07', type: 'Lab Results', desc: 'Blood pressure: 140/90. Cholesterol slightly elevated. Recommend dietary changes.', doctor: 'Dr. Sarah Miller' },
+                { patient: 'Linda Park', date: '2026-08-06', type: 'Consultation', desc: 'HbA1c at 7.2%. Adjusted insulin dosage. Next check in 2 weeks.', doctor: 'Dr. James Wilson' },
+                { patient: 'Michael Torres', date: '2026-08-07', type: 'Emergency', desc: 'Acute appendicitis confirmed via CT scan. Scheduled for laparoscopic appendectomy.', doctor: 'Dr. Sarah Miller' },
+            ],
+            messages: [
+                { from: 'Dr. Sarah Miller', to: 'Robert Chen', text: 'Your lab results are ready. Please schedule a follow-up to discuss your cholesterol levels.', time: '2 hours ago', avatar: 'SM' },
+                { from: 'Dr. James Wilson', to: 'Linda Park', text: 'Remember to check your blood sugar before meals and log the readings in the patient portal.', time: '5 hours ago', avatar: 'JW' },
+                { from: 'CarePath Admin', to: 'All Patients', text: 'The hospital will be conducting maintenance on August 15th. Online scheduling may be unavailable.', time: '1 day ago', avatar: 'CP' },
+            ]
+        };
+
+        function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); renderAll(); }
+
+        function renderAll() {
+            document.getElementById('patients-table').innerHTML = data.patients.map(p => `
+                <tr><td>${p.id}</td><td><strong>${p.name}</strong></td><td>${p.age}</td><td>${p.condition}</td>
+                <td><span class="badge badge-${p.status === 'admitted' ? 'info' : p.status === 'critical' ? 'danger' : 'success'}">${p.status}</span></td>
+                <td>${p.room}</td></tr>
+            `).join('');
+
+            document.getElementById('appointments-table').innerHTML = data.appointments.map(a => `
+                <tr><td>${a.patient}</td><td>${a.doctor}</td><td>${a.date}</td><td>${a.time}</td>
+                <td><span class="badge badge-${a.type === 'Urgent' ? 'danger' : a.type === 'Follow-up' ? 'warning' : a.type === 'Check-up' ? 'info' : 'success'}">${a.type}</span></td>
+                <td><span class="badge badge-${a.status === 'completed' ? 'success' : a.status === 'in-progress' ? 'warning' : 'info'}">${a.status}</span></td></tr>
+            `).join('');
+
+            document.getElementById('records-list').innerHTML = data.records.map(r => `
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                        <div><div style="font-weight: 600;">${r.patient}</div><div style="font-size: 0.85rem; color: var(--gray);">${r.date} &middot; ${r.type} &middot; ${r.doctor}</div></div>
+                        <span class="badge badge-info">FHIR R4</span>
+                    </div>
+                    <div style="color: var(--gray); font-size: 0.9rem;">${r.desc}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('messages-list').innerHTML = data.messages.map(m => `
+                <div class="message-item">
+                    <div class="message-avatar">${m.avatar}</div>
+                    <div class="message-content">
+                        <div class="message-header"><span class="message-name">${m.from}</span><span class="message-time">${m.time}</span></div>
+                        <div class="message-text">${m.text}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showView(view) {
+            document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-' + view).classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function openModal(type) {
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modal-title');
+            const body = document.getElementById('modal-body');
+            modal.classList.add('active');
+
+            if (type === 'patient') {
+                title.textContent = 'Add New Patient';
+                body.innerHTML = `
+                    <div class="form-group"><label>Name</label><input type="text" id="new-pat-name" placeholder="Full name"></div>
+                    <div class="form-group"><label>Age</label><input type="number" id="new-pat-age" placeholder="Age"></div>
+                    <div class="form-group"><label>Condition</label><input type="text" id="new-pat-condition" placeholder="Medical condition"></div>
+                    <div class="form-group"><label>Status</label><select id="new-pat-status"><option>outpatient</option><option>admitted</option><option>critical</option></select></div>
+                    <button class="btn btn-primary" onclick="addPatient()">Save Patient</button>
+                `;
+            } else if (type === 'appointment') {
+                title.textContent = 'Schedule Appointment';
+                const patients = data.patients.map(p => `<option>${p.name}</option>`).join('');
+                body.innerHTML = `
+                    <div class="form-group"><label>Patient</label><select id="new-appt-patient">${patients}</select></div>
+                    <div class="form-group"><label>Doctor</label><select id="new-appt-doctor"><option>Dr. Sarah Miller</option><option>Dr. James Wilson</option></select></div>
+                    <div class="form-group"><label>Date</label><input type="date" id="new-appt-date"></div>
+                    <div class="form-group"><label>Time</label><input type="time" id="new-appt-time"></div>
+                    <div class="form-group"><label>Type</label><select id="new-appt-type"><option>Check-up</option><option>Follow-up</option><option>Routine</option><option>Urgent</option></select></div>
+                    <button class="btn btn-primary" onclick="addAppointment()">Schedule</button>
+                `;
+            } else if (type === 'message') {
+                title.textContent = 'New Secure Message';
+                body.innerHTML = `
+                    <div class="form-group"><label>To</label><input type="text" id="new-msg-to" placeholder="Recipient"></div>
+                    <div class="form-group"><label>Message</label><textarea id="new-msg-text" rows="4" placeholder="Type your message..."></textarea></div>
+                    <button class="btn btn-primary" onclick="addMessage()">Send Message</button>
+                `;
+            }
+        }
+
+        function closeModal() { document.getElementById('modal').classList.remove('active'); }
+
+        function addPatient() {
+            const name = document.getElementById('new-pat-name').value;
+            const age = document.getElementById('new-pat-age').value;
+            const condition = document.getElementById('new-pat-condition').value;
+            const status = document.getElementById('new-pat-status').value;
+            if (!name) return alert('Name is required');
+            data.patients.push({ id: 'P-' + (1000 + data.patients.length + 1), name, age: age || 0, condition: condition || 'N/A', status, room: status === 'admitted' ? 'TBD' : '-' });
+            saveData(); closeModal();
+        }
+
+        function addAppointment() {
+            const patient = document.getElementById('new-appt-patient').value;
+            const doctor = document.getElementById('new-appt-doctor').value;
+            const date = document.getElementById('new-appt-date').value;
+            const time = document.getElementById('new-appt-time').value;
+            const type = document.getElementById('new-appt-type').value;
+            if (!date || !time) return alert('Date and time are required');
+            data.appointments.push({ patient, doctor, date, time, type, status: 'scheduled' });
+            saveData(); closeModal();
+        }
+
+        function addMessage() {
+            const to = document.getElementById('new-msg-to').value;
+            const text = document.getElementById('new-msg-text').value;
+            if (!text) return alert('Message is required');
+            data.messages.unshift({ from: 'Dr. You', to, text, time: 'Just now', avatar: 'DY' });
+            saveData(); closeModal();
+        }
+
+        document.getElementById('modal').addEventListener('click', e => { if (e.target === document.getElementById('modal')) closeModal(); });
+        renderAll();
+    </script>
+</body>
+</html>
