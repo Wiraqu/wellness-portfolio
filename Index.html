@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiraqu | Wellness Tech Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --secondary: #10b981;
+            --accent: #8b5cf6;
+            --dark: #0f172a;
+            --darker: #020617;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --card-bg: rgba(30, 41, 59, 0.6);
+            --border: rgba(148, 163, 184, 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--darker);
+            color: var(--light);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        .bg-gradient {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(14, 165, 233, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+        nav {
+            position: fixed;
+            top: 0; width: 100%;
+            padding: 1rem 5%;
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-links a {
+            color: var(--gray);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--light); }
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--light);
+            font-size: 1.3rem;
+            cursor: pointer;
+        }
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 8rem 5% 4rem;
+        }
+        .hero-content { max-width: 800px; }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 0.9rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 20px rgba(14, 165, 233, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(14, 165, 233, 0.4);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--light);
+            border: 1px solid var(--border);
+        }
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .projects {
+            padding: 5rem 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .section-header p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+        .project-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.4s;
+            position: relative;
+        }
+        .project-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(14, 165, 233, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+        .project-header {
+            padding: 2rem 2rem 1rem;
+            position: relative;
+        }
+        .project-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .icon-wf { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+        .icon-vs { background: linear-gradient(135deg, #10b981, #059669); }
+        .icon-cp { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .project-header h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+        .project-header .tag {
+            display: inline-block;
+            padding: 0.2rem 0.7rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .tag-saas { background: rgba(14, 165, 233, 0.15); color: var(--primary); }
+        .tag-ai { background: rgba(16, 185, 129, 0.15); color: var(--secondary); }
+        .tag-portal { background: rgba(139, 92, 246, 0.15); color: var(--accent); }
+        .project-body {
+            padding: 0 2rem 1.5rem;
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 1rem;
+        }
+        .tech-tag {
+            padding: 0.25rem 0.6rem;
+            background: rgba(148, 163, 184, 0.08);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+        .project-footer {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .btn-sm {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.85rem;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            max-width: 900px;
+            margin: 3rem auto 0;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .stat-card h4 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stat-card p {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 0.3rem;
+        }
+        footer {
+            text-align: center;
+            padding: 3rem 5%;
+            border-top: 1px solid var(--border);
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .nav-toggle { display: block; }
+            .hero { padding-top: 6rem; }
+            .projects-grid { grid-template-columns: 1fr; }
+            .hero-buttons { flex-direction: column; align-items: center; }
+            .btn { width: 100%; max-width: 280px; justify-content: center; }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in {
+            animation: fadeInUp 0.8s ease forwards;
+        }
+        .delay-1 { animation-delay: 0.1s; opacity: 0; }
+        .delay-2 { animation-delay: 0.2s; opacity: 0; }
+        .delay-3 { animation-delay: 0.3s; opacity: 0; }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+    <nav>
+        <div class="logo">Wiraqu.</div>
+        <div class="nav-links">
+            <a href="#projects">Projects</a>
+            <a href="https://github.com/wiraqu/wellness-portfolio" target="_blank">GitHub</a>
+        </div>
+        <button class="nav-toggle" onclick="toggleMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge animate-in">
+                <i class="fas fa-code"></i> Full-Stack Wellness Tech Portfolio
+            </div>
+            <h1 class="animate-in delay-1">
+                Building the Future of <span>Healthcare Tech</span>
+            </h1>
+            <p class="animate-in delay-2">
+                Three production-ready SaaS applications for wellness professionals, 
+                AI health monitoring, and hospital patient management.
+            </p>
+            <div class="hero-buttons animate-in delay-3">
+                <a href="#projects" class="btn btn-primary">
+                    <i class="fas fa-rocket"></i> View Projects
+                </a>
+                <a href="https://github.com/wiraqu/wellness-portfolio" target="_blank" class="btn btn-outline">
+                    <i class="fab fa-github"></i> Source Code
+                </a>
+            </div>
+            <div class="stats animate-in delay-3">
+                <div class="stat-card"><h4>3</h4><p>Full-Stack Apps</p></div>
+                <div class="stat-card"><h4>6+</h4><p>Tech Stacks</p></div>
+                <div class="stat-card"><h4>100%</h4><p>Demo Ready</p></div>
+                <div class="stat-card"><h4>HIPAA</h4><p>Compliant Design</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="projects" class="projects">
+        <div class="section-header">
+            <h2>Featured Projects</h2>
+            <p>Click "Live Demo" to explore each application with simulated data</p>
+        </div>
+        <div class="projects-grid">
+            <div class="project-card">
+                <div class="project-header">
+                    <div class="project-icon icon-wf"><i class="fas fa-heart-pulse"></i></div>
+                    <span class="tag tag-saas">SaaS Platform</span>
+                    <h3>WellnessFlow</h3>
+                    <p style="color: var(--gray); font-size: 0.9rem;">Practice Management</p>
+                </div>
+                <div class="project-body">
+                    All-in-one practice management for nutritionists, health coaches, 
+                    therapists, and wellness professionals.
+                    <div class="tech-stack">
+                        <span class="tech-tag">Next.js 14</span>
+                        <span class="tech-tag">Node.js</span>
+                        <span class="tech-tag">Express</span>
+                        <span class="tech-tag">Prisma</span>
+                        <span class="tech-tag">PostgreSQL</span>
+                        <span class="tech-tag">Stripe</span>
+                    </div>
+                </div>
+                <div class="project-footer">
+                    <a href="./wellnessflow-demo/" class="btn btn-primary btn-sm">
+                        <i class="fas fa-play"></i> Live Demo
+                    </a>
+                    <a href="https://github.com/wiraqu/wellness-portfolio/tree/main/01-wellnessflow-saas-practice-management" target="_blank" class="btn btn-outline btn-sm">
+                        <i class="fab fa-github"></i> Code
+                    </a>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-header">
+                    <div class="project-icon icon-vs"><i class="fas fa-brain"></i></div>
+                    <span class="tag tag-ai">AI-Powered</span>
+                    <h3>VitalSync</h3>
+                    <p style="color: var(--gray); font-size: 0.9rem;">Health Risk Prediction</p>
+                </div>
+                <div class="project-body">
+                    AI-powered workforce health monitoring and risk prediction platform.
+                    <div class="tech-stack">
+                        <span class="tech-tag">Next.js 14</span>
+                        <span class="tech-tag">Python</span>
+                        <span class="tech-tag">FastAPI</span>
+                        <span class="tech-tag">MongoDB</span>
+                        <span class="tech-tag">scikit-learn</span>
+                    </div>
+                </div>
+                <div class="project-footer">
+                    <a href="./vitalsync-demo/" class="btn btn-primary btn-sm">
+                        <i class="fas fa-play"></i> Live Demo
+                    </a>
+                    <a href="https://github.com/wiraqu/wellness-portfolio/tree/main/02-vitalsync-ai-health-monitoring" target="_blank" class="btn btn-outline btn-sm">
+                        <i class="fab fa-github"></i> Code
+                    </a>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="project-header">
+                    <div class="project-icon icon-cp"><i class="fas fa-hospital"></i></div>
+                    <span class="tag tag-portal">Patient Portal</span>
+                    <h3>CarePath</h3>
+                    <p style="color: var(--gray); font-size: 0.9rem;">Hospital Management</p>
+                </div>
+                <div class="project-body">
+                    Hospital patient portal with FHIR-compliant data models and secure communication.
+                    <div class="tech-stack">
+                        <span class="tech-tag">Ruby on Rails</span>
+                        <span class="tech-tag">PostgreSQL</span>
+                        <span class="tech-tag">FHIR</span>
+                        <span class="tech-tag">AWS S3</span>
+                        <span class="tech-tag">RSpec</span>
+                    </div>
+                </div>
+                <div class="project-footer">
+                    <a href="./carepath-demo/" class="btn btn-primary btn-sm">
+                        <i class="fas fa-play"></i> Live Demo
+                    </a>
+                    <a href="https://github.com/wiraqu/wellness-portfolio/tree/main/03-carepath-hospital-patient-portal" target="_blank" class="btn btn-outline btn-sm">
+                        <i class="fab fa-github"></i> Code
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>Built with <i class="fas fa-heart" style="color: #ef4444;"></i> by 
+        <a href="https://github.com/wiraqu" target="_blank">Wiraqu</a> 
+        &middot; Wellness Tech Portfolio 2026</p>
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            const links = document.querySelector('.nav-links');
+            if (links.style.display === 'flex') {
+                links.style.display = 'none';
+            } else {
+                links.style.display = 'flex';
+                links.style.flexDirection = 'column';
+                links.style.position = 'absolute';
+                links.style.top = '60px';
+                links.style.left = '0';
+                links.style.right = '0';
+                links.style.background = 'rgba(2, 6, 23, 0.95)';
+                links.style.padding = '1rem 5%';
+                links.style.backdropFilter = 'blur(20px)';
+                links.style.borderBottom = '1px solid var(--border)';
+            }
+        }
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.project-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'all 0.6s ease';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>
